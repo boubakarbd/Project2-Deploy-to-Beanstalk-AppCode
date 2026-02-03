@@ -1,4 +1,4 @@
-name: "Java App CI/CD (OIDC + AWS CLI)"
+name: "Java App CI/CD (OIDC + SonarCloud + AWS CLI)"
 
 on:
   push:
@@ -16,10 +16,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 0 
 
-      # --- SCAN DE SÉCURITÉ ---
-      - name: Run Trivy Security Scan
+      # --- 1. SÉCURITÉ : TRIVY ---
+      - name: Run Trivy Security Scan 🛡️
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
@@ -28,13 +28,13 @@ jobs:
           format: 'sarif'
           output: 'trivy-app-results.sarif'
 
-      - name: Upload Trivy results
+      - name: Upload Trivy results to GitHub 📤
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: 'trivy-app-results.sarif'
 
-      # --- BUILD MAVEN ---
+      # --- 2. CONFIGURATION JAVA ---
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -42,8 +42,22 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build with Maven
-        run: mvn clean package -DskipTests
+      # --- 3. BUILD, TESTS & JACOCO ---
+      #  générer le rapport de couverture JaCoCo.
+      - name: Build and Test with Maven ☕
+        run: mvn clean verify
+
+      # --- 4. ANALYSE QUALITÉ : SONARCLOUD ---
+      - name: SonarCloud Scan ☁️
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }} \
+            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION }} \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -55,10 +69,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-scan
     env:
-      # Variables basées sur ton main.tf
+      # Noms des ressources définis dans ton main.tf 
       EB_APP_NAME: "project2-beanstalk-application"
       EB_ENV_NAME: "project2-beanstalk-environment"
-      # Bucket créé dans ton Terraform
       S3_BUCKET: "project-2-app-code-bucket-unique-name-2026-01" 
 
     steps:
@@ -74,35 +87,35 @@ jobs:
         role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
         aws-region: us-east-1
 
-    - name: Deploy via AWS CLI
+    - name: Deploy via AWS CLI 🚀
       run: |
-        # 1. Identification du fichier .war (le nom peut varier selon ta version Maven)
+        # 1. Identification du fichier .war
         WAR_FILE=$(ls deploy-package/*.war)
         VERSION_LABEL="deploy-${{ github.run_id }}-${{ github.sha }}"
         S3_KEY="versions/${VERSION_LABEL}.war"
 
-        echo "🚀 Début du déploiement de la version : $VERSION_LABEL"
+        echo "🚀 Déploiement de la version : $VERSION_LABEL"
 
-        # 2. Upload du fichier vers ton bucket S3 d'artefacts
+        # 2. Upload vers le bucket S3 d'artefacts 
         aws s3 cp "$WAR_FILE" "s3://${{ env.S3_BUCKET }}/${S3_KEY}"
 
-        # 3. Création d'une nouvelle version d'application Beanstalk
+        # 3. Création de la version Beanstalk
         aws elasticbeanstalk create-application-version \
           --application-name "${{ env.EB_APP_NAME }}" \
           --version-label "$VERSION_LABEL" \
           --description "Commit ${{ github.sha }}" \
           --source-bundle S3Bucket="${{ env.S3_BUCKET }}",S3Key="${S3_KEY}"
 
-        # 4. Mise à jour de l'environnement vers cette nouvelle version
+        # 4. Mise à jour de l'environnement
         aws elasticbeanstalk update-environment \
           --application-name "${{ env.EB_APP_NAME }}" \
           --environment-name "${{ env.EB_ENV_NAME }}" \
           --version-label "$VERSION_LABEL"
 
-        # 5. Attente de la fin du déploiement (Healthy status)
-        echo "⏳ Attente de la mise à jour de l'environnement..."
+        # 5. Attente de la stabilisation
+        echo "⏳ Attente de la mise à jour..."
         aws elasticbeanstalk wait environment-updated \
           --application-name "${{ env.EB_APP_NAME }}" \
           --environment-name "${{ env.EB_ENV_NAME }}"
         
-        echo "✅ Déploiement terminé avec succès !"
+        echo "✅ Déploiement terminé !"

@@ -90,12 +90,24 @@
 	<dependency>
     	    <groupId>org.elasticsearch.client</groupId>
     	    <artifactId>elasticsearch-rest-high-level-client</artifactId>
-    	    <version>7.10.2</version>
+	    <version>7.10.2</version>
+	    <exclusions>
+		<exclusion>
+		    <groupId>org.lz4</groupId>
+            	    <artifactId>lz4-java</artifactId>
+		</exclusion>
+    	    </exclusions>
   	</dependency>
 	<dependency>
     	   <groupId>org.elasticsearch</groupId>
            <artifactId>elasticsearch</artifactId>
-           <version>7.17.13</version>
+	   <version>7.17.13</version>
+	   <exclusions>
+       	       <exclusion>
+                   <groupId>org.lz4</groupId>
+                   <artifactId>lz4-java</artifactId>
+               </exclusion>
+           </exclusions>
    	</dependency>
         <dependency>
             <groupId>org.springframework.amqp</groupId>
@@ -229,7 +241,13 @@
         <dependency>
             <groupId>org.elasticsearch.plugin</groupId>
             <artifactId>aggs-matrix-stats-client</artifactId>
-            <version>7.10.2</version>
+	    <version>7.10.2</version>
+	    <exclusions>
+        	<exclusion>
+            	    <groupId>org.lz4</groupId>
+            	    <artifactId>lz4-java</artifactId>
+            	</exclusion>
+    	    </exclusions>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -259,7 +277,8 @@
 	    <groupId>at.yawk.lz4</groupId>
 	    <artifactId>lz4-java</artifactId>
 	    <version>${lz4.version}</version>
-	</dependency>
+    	</dependency>
+
 
 
     </dependencies>

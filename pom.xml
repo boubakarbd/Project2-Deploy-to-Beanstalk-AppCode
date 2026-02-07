@@ -13,7 +13,7 @@
     <properties>
         <spring.version>6.2.11</spring.version>
 	<spring-boot.version>3.4.2</spring-boot.version>
-        <spring-security.version>6.2.10</spring-security.version>
+        <spring-security.version>6.3.8</spring-security.version>
 	<spring-data-jpa.version>3.4.2</spring-data-jpa.version>
         <hibernate.version>7.0.0.Alpha3</hibernate.version>
         <hibernate-validator.version>6.2.0.Final</hibernate-validator.version>
@@ -25,6 +25,7 @@
         <maven.compiler.source>17</maven.compiler.source>
 	<maven.compiler.target>17</maven.compiler.target>
 	<snakeyaml.version>2.0</snakeyaml.version>
+	<lz4.version>1.8.1</lz4.version>
     </properties>
 
 
@@ -86,16 +87,16 @@
             <artifactId>snakeyaml</artifactId>
             <version>${snakeyaml.version}</version>
     	</dependency>
-<dependency>
-    <groupId>org.elasticsearch.client</groupId>
-    <artifactId>elasticsearch-rest-high-level-client</artifactId>
-    <version>7.10.2</version>
-</dependency>
-<dependency>
-    <groupId>org.elasticsearch</groupId>
-    <artifactId>elasticsearch</artifactId>
-    <version>7.17.13</version>
-</dependency>
+	<dependency>
+    	    <groupId>org.elasticsearch.client</groupId>
+    	    <artifactId>elasticsearch-rest-high-level-client</artifactId>
+    	    <version>7.10.2</version>
+  	</dependency>
+	<dependency>
+    	   <groupId>org.elasticsearch</groupId>
+           <artifactId>elasticsearch</artifactId>
+           <version>7.17.13</version>
+   	</dependency>
         <dependency>
             <groupId>org.springframework.amqp</groupId>
             <artifactId>spring-rabbit</artifactId>
@@ -254,6 +255,12 @@
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <version>2.0.0</version>
         </dependency>
+	<dependency>
+	    <groupId>org.lz4</groupId>
+	    <artifactId>lz4-java</artifactId>
+	    <version>${lz4.version}</version>
+	</dependency>
+
 
     </dependencies>
 
@@ -264,7 +271,7 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>11.0.15</version>
+	        <version>11.0.15</version>
                 <configuration>
                     <webApp>
                         <contextPath>/</contextPath>

@@ -51,8 +51,8 @@ jobs:
           scan-type: 'fs'
           severity: 'HIGH,CRITICAL'
           exit-code: '1'
-          format: 'sarif'
-          output: 'trivy-app-results.sarif'
+          format: 'table'
+       #   output: 'trivy-app-results.sarif'
 
       - name: Upload Trivy results to GitHub 📤
         uses: github/codeql-action/upload-sarif@v4

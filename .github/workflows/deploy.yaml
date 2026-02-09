@@ -18,7 +18,8 @@ jobs:
         with:
           fetch-depth: 0 
 
-      # --- 2. CONFIGURATION JAVA ---
+
+      #  CONFIGURATION JAVA ---
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -26,12 +27,12 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      # --- 3. BUILD, TESTS & JACOCO ---
+      #  BUILD, TESTS & JACOCO ---
       #  générer le rapport de couverture JaCoCo.
       - name: Build and Test with Maven ☕
         run: mvn clean verify
 
-      # --- 4. ANALYSE QUALITÉ : SONARCLOUD ---
+      #  ANALYSE QUALITÉ : SONARCLOUD ---
       - name: SonarCloud Scan ☁️
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
